@@ -4,33 +4,36 @@ using UnityEngine;
 
 public class DoorScript : MonoBehaviour
 {
-	public Animator doorAnimator; // Assign this in the inspector
-	private bool isDoorOpen = false; // Track whether the door is open or not
+	private DoorAutoClose doorAutoClose;
 
 	void Start()
 	{
-		if (doorAnimator == null)
+		doorAutoClose = GetComponent<DoorAutoClose>();
+		if (doorAutoClose == null)
 		{
-			doorAnimator = GetComponent<Animator>();
+			Debug.LogError("DoorAutoClose script not found on the door!");
 		}
 	}
 
 	void Update()
 	{
-		if (Input.GetMouseButtonDown(0)) // 0 is the left mouse button
+		if (Input.GetMouseButtonDown(0))
 		{
 			Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 			RaycastHit hit;
 
 			if (Physics.Raycast(ray, out hit))
 			{
-				if (hit.transform == transform)
+				if (hit.transform == transform && doorAutoClose != null)
 				{
-					// Toggle the door state
-					isDoorOpen = !isDoorOpen;
-
-					// Trigger the appropriate animation based on the door state
-					doorAnimator.SetBool("IsOpen", isDoorOpen);
+					if (!doorAutoClose.IsDoorOpen())
+					{
+						doorAutoClose.OpenDoor(); // Open the door and start the auto-close coroutine
+					}
+					else
+					{
+						doorAutoClose.CloseDoor(); // Manually close the door and stop the auto-close coroutine
+					}
 				}
 			}
 		}
